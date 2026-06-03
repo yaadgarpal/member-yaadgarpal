@@ -23,7 +23,7 @@ export default function Login() {
     }
 
     // Mock successful login
-    navigate("/dashboard");
+  //  navigate("/dashboard");
   };
 
   return (
@@ -79,9 +79,10 @@ export default function Login() {
       <div>
         <button
           type="submit"
+          disabled={true}
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Sign In
+          Link will be provided soon
         </button>
       </div>
 

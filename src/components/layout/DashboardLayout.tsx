@@ -1,15 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { User, Clock, Wallet, FileCheck, Building2, LogOut, Copy, Check, Menu, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { AuthService } from "../../apis/auth.service";
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+    try {
+        const response = await AuthService.profile();
+
+        console.log(response);
+
+        setProfile(response.data);
+    } catch (error) {
+        console.error(error);
+    }
+ };
 
   const navigation = [
-    { name: "Dashboard Home", href: "/dashboard", icon: User },
+    { name: "Dashboard", href: "/dashboard", icon: User },
     { name: "Profile", href: "/dashboard/profile", icon: User },
     { name: "Booking History", href: "/dashboard/bookings", icon: Clock },
     { name: "Wallet History", href: "/dashboard/wallet", icon: Wallet },
@@ -17,8 +35,8 @@ export default function DashboardLayout() {
     { name: "Bank Details", href: "/dashboard/banks", icon: Building2 },
   ];
 
-  const referralCode = "YAADGAR-2026-XQ";
-  const bookingCode = "BKG-1029";
+    const referralCode = profile?.referral_code || "N/A";
+    const bookingCode = profile?.booking_code || "N/A";
 
   const handleCopy = (code: string, type: string) => {
     navigator.clipboard.writeText(code);
@@ -28,8 +46,14 @@ export default function DashboardLayout() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    toast.success("Logged out successfully");
+
     navigate("/login");
   };
+  
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -53,7 +77,7 @@ export default function DashboardLayout() {
       >
         {/* Sidebar Header */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200">
-          <span className="text-2xl font-bold text-[#7e22ce]">YaadgarPal</span>
+            <img src="/public/image.png" alt="YaadgarPal Logo" className="h-16 w-auto" />
           <button
             onClick={() => setSidebarOpen(false)}
             className="md:hidden text-gray-400 hover:text-gray-600"

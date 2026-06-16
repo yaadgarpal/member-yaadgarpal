@@ -7,9 +7,12 @@ import LandingPage from './pages/LandingPage'
 
 import AuthLayout from './components/layout/AuthLayout'
 import DashboardLayout from './components/layout/DashboardLayout'
+import ProtectedRoute from './components/ProtectedRoute'
 
 import Signup from './pages/Auth/Signup'
 import Login from './pages/Auth/Login'
+import ForgotPassword from './pages/Auth/ForgetPassword'
+import ResetPassword from './pages/Auth/ResetPassword'
 
 import DashboardHome from './pages/Dashboard/DashboardHome'
 import Profile from './pages/Dashboard/Profile'
@@ -37,39 +40,51 @@ const router = createBrowserRouter([
       {
         path: "login",
         element: <Login />
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPassword />
+      },
+      {
+        path: "reset-password/:token",
+        element: <ResetPassword />
       }
     ]
   },
   {
-    path: "/dashboard",
-    element: <DashboardLayout />,
-    children: [
-      {
-        index: true,
-        element: <DashboardHome />
-      },
-      {
-        path: "profile",
-        element: <Profile />
-      },
-      {
-        path: "bookings",
-        element: <BookingHistory />
-      },
-      {
-        path: "wallet",
-        element: <WalletHistory />
-      },
-      {
-        path: "kyc",
-        element: <KYC />
-      },
-      {
-        path: "banks",
-        element: <BankDetails />
-      }
+  path: "/dashboard",
+  element: (
+    <ProtectedRoute>
+      <DashboardLayout />
+    </ProtectedRoute>
+  ),
+  children: [
+        {
+            index: true,
+            element: <DashboardHome />
+        },
+        {
+            path: "profile",
+            element: <Profile />
+        },
+        {
+            path: "bookings",
+            element: <BookingHistory />
+        },
+        {
+            path: "wallet",
+            element: <WalletHistory />
+        },
+        {
+            path: "kyc",
+            element: <KYC />
+        },
+        {
+            path: "banks",
+            element: <BankDetails />
+        }
     ]
-  }
+    }
 ])
 
 createRoot(document.getElementById('root')!).render(

@@ -9,4 +9,23 @@ export const AuthService = {
 
         return await apiRequest.post("auth/register", payload)
     }, 
+    async forgotPassword(payload: { email: string }) {
+
+        return await apiRequest.post("auth/forgot-password", payload)
+    },
+    async getProfile() {
+        return await apiRequest.get("member/auth/me");
+    },
+    async resetPassword(
+        token: string,
+        payload: { password: string }
+        ) {
+        return await apiRequest.put(
+            `auth/reset-password/${token}`,
+            payload
+        );
+    },
+    async profile() {
+        return await apiRequest.get("auth/profile");
+    }
 }

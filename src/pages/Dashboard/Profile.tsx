@@ -42,45 +42,114 @@ export default function Profile() {
   }
 
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium text-gray-900">
-            User Profile
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Personal details and account information.
-          </p>
+        <div className="space-y-6">
+            {/* Profile Header */}
+            <div className="bg-gradient-to-r from-purple-600 via-violet-600 to-orange-500 rounded-3xl p-8 text-white shadow-xl">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                <div className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center text-3xl font-bold">
+                    {profile?.name?.charAt(0) || "U"}
+                </div>
+
+                <div>
+                    <h2 className="text-3xl font-bold">
+                    {profile?.name}
+                    </h2>
+
+                    <p className="text-purple-100 mt-1">
+                    {profile?.email}
+                    </p>
+
+                    <p className="text-purple-100 text-sm mt-1">
+                    {profile?.phone}
+                    </p>
+                </div>
+                </div>
+
+                <button className="bg-white text-purple-700 px-5 py-3 rounded-xl font-semibold hover:bg-gray-100 transition">
+                Edit Profile
+                </button>
+            </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="bg-white rounded-2xl shadow p-6 border">
+                <p className="text-gray-500 text-sm">
+                Referral Code
+                </p>
+
+                <h3 className="text-xl font-bold text-purple-600 mt-2">
+                {profile?.referral_code || "N/A"}
+                </h3>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow p-6 border">
+                <p className="text-gray-500 text-sm">
+                Wallet Points
+                </p>
+
+                <h3 className="text-xl font-bold text-orange-600 mt-2">
+                {profile?.wallet_amount || 0} Points
+                </h3>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow p-6 border">
+                <p className="text-gray-500 text-sm">
+                Reward Coins
+                </p>
+
+                <h3 className="text-xl font-bold text-green-600 mt-2">
+                {profile?.coins || 0}
+                </h3>
+            </div>
+            </div>
+
+            {/* Details Card */}
+            <div className="bg-white rounded-3xl shadow border overflow-hidden">
+            <div className="px-6 py-5 border-b bg-gray-50">
+                <h3 className="text-lg font-semibold text-gray-900">
+                Personal Information
+                </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+                <InfoCard
+                label="Full Name"
+                value={profile?.name}
+                />
+
+                <InfoCard
+                label="Email Address"
+                value={profile?.email}
+                />
+
+                <InfoCard
+                label="Phone Number"
+                value={profile?.phone}
+                />
+
+                <InfoCard
+                label="Referral Code"
+                value={profile?.referral_code}
+                />
+
+                <InfoCard
+                label="Status"
+                value={profile?.status}
+                />
+
+                <InfoCard
+                label="Address"
+                value={profile?.address}
+                />
+            </div>
+            </div>
         </div>
-
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700">
-          Edit Profile
-        </button>
-      </div>
-
-      <div className="border-t border-gray-200">
-        <dl className="divide-y divide-gray-200">
-          <ProfileRow label="Full Name" value={profile?.name} />
-          <ProfileRow label="Email" value={profile?.email} />
-          <ProfileRow label="Phone" value={profile?.phone} />
-          <ProfileRow label="Address" value={profile?.address} />
-          <ProfileRow label="Referral Code" value={profile?.referral_code} />
-          <ProfileRow
-            label="Wallet Balance"
-            value={`₹${profile?.wallet_amount ?? 0}`}
-          />
-          <ProfileRow
-            label="Coins"
-            value={`${profile?.coins ?? 0}`}
-          />
-          <ProfileRow label="Status" value={profile?.status} />
-        </dl>
-      </div>
-    </div>
-  );
+        );
 }
 
-function ProfileRow({
+function InfoCard({
   label,
   value,
 }: {
@@ -88,13 +157,14 @@ function ProfileRow({
   value: any;
 }) {
   return (
-    <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-      <dt className="text-sm font-medium text-gray-500">
+    <div className="bg-gray-50 rounded-xl p-4">
+      <p className="text-xs uppercase tracking-wide text-gray-500">
         {label}
-      </dt>
-      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+      </p>
+
+      <p className="mt-2 text-gray-900 font-medium break-words">
         {value || "-"}
-      </dd>
+      </p>
     </div>
   );
 }

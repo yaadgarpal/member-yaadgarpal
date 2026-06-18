@@ -20,6 +20,7 @@ import BookingHistory from './pages/Dashboard/BookingHistory'
 import WalletHistory from './pages/Dashboard/WalletHistory'
 import KYC from './pages/Dashboard/KYC'
 import BankDetails from './pages/Dashboard/BankDetails'
+import ReferralHistory from './pages/Dashboard/ReferralHistory'
 
 import { Toaster } from 'react-hot-toast'
 import { Provider } from 'react-redux'
@@ -82,6 +83,10 @@ const router = createBrowserRouter([
         {
             path: "banks",
             element: <BankDetails />
+        },
+        {
+            path: "refer",
+            element: <ReferralHistory />
         }
     ]
     }

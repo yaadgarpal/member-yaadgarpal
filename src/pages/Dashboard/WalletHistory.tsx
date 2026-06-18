@@ -1,112 +1,208 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { Wallet, ArrowDownLeft, IndianRupee } from "lucide-react";
+import { AuthService } from "../../apis/auth.service";
 
 export default function WalletHistory() {
+  const [history, setHistory] = useState<any[]>([]);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [loading, setLoading] = useState(true);
+
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
-  const transactions = [
-    { id: "TXN-001", date: "2026-06-01", type: "Referral Bonus", amount: "+₹500", status: "Success" },
-    { id: "TXN-002", date: "2026-05-28", type: "Withdrawal", amount: "-₹1,000", status: "Success" },
-  ];
+  useEffect(() => {
+    fetchProfile();
+    fetchWalletHistory();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await AuthService.profile();
+
+      setWalletBalance(
+        response?.data?.wallet_amount || 0
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchWalletHistory = async () => {
+    try {
+      const response = await AuthService.getOnlyWalletHistory();
+
+      setHistory(
+        response?.data?.history || []
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load wallet history");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleWithdraw = (e: React.FormEvent) => {
     e.preventDefault();
+
     const amount = Number(withdrawAmount);
-    
+
     if (!amount || amount <= 0) {
-      toast.error("Please enter a valid amount.");
-      return;
-    }
-    
-    if (amount > 4500) {
-      toast.error("Insufficient balance.");
+      toast.error("Please enter a valid amount");
       return;
     }
 
-    toast.success(`Withdrawal request for ₹${amount} submitted successfully!`);
-    setShowWithdraw(false);
+    if (amount > walletBalance) {
+      toast.error("Insufficient balance");
+      return;
+    }
+
+    toast.success(
+      `Withdrawal request for ₹${amount} submitted`
+    );
+
     setWithdrawAmount("");
+    setShowWithdraw(false);
   };
 
   return (
     <div className="space-y-6">
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      {/* Wallet Balance Card */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg">
+        <div className="flex items-center gap-3">
+          <Wallet className="h-8 w-8" />
+
           <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Wallet</h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">Your current balance and history.</p>
+            <p className="text-orange-100">
+              Available Balance
+            </p>
+
+            <h2 className="text-4xl font-bold mt-1">
+              ₹{walletBalance}
+            </h2>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Current Balance</p>
-              <p className="text-2xl font-bold text-green-600">₹4,500</p>
-            </div>
-            <button
-              onClick={() => setShowWithdraw(!showWithdraw)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
-            >
-              Withdraw
-            </button>
+        </div>
+      </div>
+
+      {/* Withdraw Section */}
+      <div className="bg-white rounded-2xl shadow border">
+        <div className="p-5 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">
+              Withdraw Amount
+            </h3>
+
+            <p className="text-sm text-gray-500">
+              Transfer your earnings to bank account
+            </p>
           </div>
+
+          <button
+            onClick={() =>
+              setShowWithdraw(!showWithdraw)
+            }
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm"
+          >
+            Withdraw
+          </button>
         </div>
 
         {showWithdraw && (
-          <div className="border-t border-gray-200 px-4 py-5 bg-gray-50">
-            <form onSubmit={handleWithdraw} className="max-w-sm">
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                Amount to Withdraw (₹)
-              </label>
-              <div className="mt-2 flex gap-3">
-                <input
-                  type="number"
-                  id="amount"
-                  min="100"
-                  placeholder="e.g. 1000"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
-                />
-                <button
-                  type="submit"
-                  className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
-                >
-                  Submit
-                </button>
-              </div>
-              <p className="mt-2 text-xs text-gray-500">Minimum withdrawal is ₹100.</p>
+          <div className="border-t p-5">
+            <form
+              onSubmit={handleWithdraw}
+              className="flex flex-col sm:flex-row gap-3"
+            >
+              <input
+                type="number"
+                placeholder="Enter amount"
+                value={withdrawAmount}
+                onChange={(e) =>
+                  setWithdrawAmount(e.target.value)
+                }
+                className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+
+              <button
+                type="submit"
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+              >
+                Submit
+              </button>
             </form>
+
+            <p className="text-xs text-gray-500 mt-2">
+              Minimum withdrawal ₹100
+            </p>
           </div>
         )}
+      </div>
 
-        <div className="border-t border-gray-200">
-          <ul className="divide-y divide-gray-200">
-            {transactions.map((txn) => (
-              <li key={txn.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-900">{txn.type}</p>
-                  <div className="ml-2 flex-shrink-0 flex">
-                    <p className={`text-sm font-semibold ${txn.amount.startsWith('+') ? 'text-green-600' : 'text-gray-900'}`}>
-                      {txn.amount}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-2 sm:flex sm:justify-between">
-                  <div className="sm:flex">
-                    <p className="flex items-center text-sm text-gray-500">
-                      TXN ID: {txn.id}
-                    </p>
-                  </div>
-                  <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                    <p>
-                      <time dateTime={txn.date}>{txn.date}</time> • {txn.status}
-                    </p>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+      {/* Transaction History */}
+      <div className="bg-white rounded-2xl shadow border overflow-hidden">
+        <div className="p-5 border-b">
+          <h3 className="text-lg font-semibold">
+            Wallet History
+          </h3>
         </div>
+
+        {loading ? (
+          <div className="p-10 text-center">
+            Loading...
+          </div>
+        ) : history.length === 0 ? (
+          <div className="p-10 text-center text-gray-500">
+            No transactions found
+          </div>
+        ) : (
+          <div className="divide-y">
+            {history.map((txn) => (
+              <div
+                key={txn._id}
+                className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-gray-50"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <ArrowDownLeft className="h-5 w-5 text-green-600" />
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-900">
+                      {txn.type.replaceAll("_", " ")}
+                    </h4>
+
+                    <p className="text-sm text-gray-500 mt-1">
+                      {txn.description}
+                    </p>
+
+                    <p className="text-xs text-gray-400 mt-2">
+                      {new Date(
+                        txn.createdAt
+                      ).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="text-green-600 font-bold text-lg">
+                    +{txn.points} Points
+                </div>
+
+                  <span
+                    className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${
+                      txn.status === "SUCCESS"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {txn.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

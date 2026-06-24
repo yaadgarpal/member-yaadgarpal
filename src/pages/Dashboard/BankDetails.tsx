@@ -1,97 +1,323 @@
-import { useState } from "react";
-
-type Bank = {
-  id: string;
-  name: string;
-  accountNo: string;
-  isDefault: boolean;
-};
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import {
+  Building2,
+  CreditCard,
+  Plus,
+  CheckCircle,
+} from "lucide-react";
+import { AuthService } from "../../apis/auth.service";
 
 export default function BankDetails() {
-  const [banks, setBanks] = useState<Bank[]>([
-    { id: "1", name: "HDFC Bank", accountNo: "XXXX-XXXX-1234", isDefault: true },
-  ]);
+  const [banks, setBanks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingBank, setEditingBank] = useState<any>(null);
 
-  const setAsDefault = (id: string) => {
-    setBanks(banks.map(bank => ({ ...bank, isDefault: bank.id === id })));
+  const [formData, setFormData] = useState({
+    name: "",
+    account_no: "",
+    ifsc: "",
+    bank_name: "",
+    branch_name: "",
+    is_default: false,
+  });
+
+  useEffect(() => {
+    fetchBanks();
+  }, []);
+
+  const fetchBanks = async () => {
+    try {
+      const response =
+        await AuthService.getBankAccounts();
+
+      setBanks(response.data || []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load bank accounts");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAddBank = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Mock addition
-    setBanks([...banks, { id: Date.now().toString(), name: "New Bank", accountNo: "XXXX-XXXX-9999", isDefault: false }]);
-    setShowAddForm(false);
+  const handleIFSCChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = e.target.value.toUpperCase();
+
+    setFormData((prev) => ({
+      ...prev,
+      ifsc: value,
+    }));
+
+    if (value.length === 11) {
+      try {
+        const response = await fetch(
+          `https://ifsc.razorpay.com/${value}`
+        );
+
+        const data = await response.json();
+
+        setFormData((prev) => ({
+          ...prev,
+          ifsc: value,
+          bank_name: data.BANK || "",
+          branch_name: data.BRANCH || "",
+        }));
+      } catch (error) {
+        toast.error("Invalid IFSC Code");
+      }
+    }
   };
+
+  const handleAddBank = async (
+        e: React.FormEvent
+        ) => {
+        e.preventDefault();
+
+        try {
+            if (editingBank) {
+            await AuthService.updateBankAccount(
+                editingBank._id,
+                formData
+            );
+
+            toast.success("Bank updated successfully");
+            } else {
+            await AuthService.addBankAccount(formData);
+
+            toast.success(
+                "Bank account added successfully"
+            );
+            }
+
+            setEditingBank(null);
+            setShowAddForm(false);
+
+            setFormData({
+            name: "",
+            account_no: "",
+            ifsc: "",
+            bank_name: "",
+            branch_name: "",
+            is_default: false,
+            });
+
+            fetchBanks();
+        } catch (error) {
+            toast.error("Operation failed");
+        }
+    };
 
   return (
     <div className="space-y-6">
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Bank Accounts</h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">Manage your withdrawal accounts.</p>
-          </div>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
-          >
-            {showAddForm ? "Cancel" : "Add Bank"}
-          </button>
-        </div>
-        
-        {showAddForm && (
-          <div className="border-t border-gray-200 px-4 py-5 sm:p-6 bg-gray-50">
-            <form className="space-y-4 max-w-xl" onSubmit={handleAddBank}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Bank Name</label>
-                <input type="text" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Account Number</label>
-                <input type="text" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">IFSC Code</label>
-                <input type="text" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 sm:text-sm" />
-              </div>
-              <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                Save Bank Details
-              </button>
-            </form>
-          </div>
-        )}
+      <div className="bg-gradient-to-r from-orange-500 to-purple-600 rounded-3xl p-6 text-white shadow-lg">
+        <div className="flex items-center gap-4">
+          <Building2 className="h-10 w-10" />
 
-        <div className="border-t border-gray-200">
-          <ul className="divide-y divide-gray-200">
-            {banks.map((bank) => (
-              <li key={bank.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="text-sm font-medium text-gray-900">{bank.name}</div>
-                    <div className="ml-4 text-sm text-gray-500">{bank.accountNo}</div>
-                    {bank.isDefault && (
-                      <span className="ml-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <div>
+            <h2 className="text-2xl font-bold">
+              Bank Accounts
+            </h2>
+
+            <p className="text-orange-100">
+              Manage your withdrawal bank accounts.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={() =>
+            setShowAddForm(!showAddForm)
+          }
+          className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-purple-600 text-white px-5 py-3 rounded-xl"
+        >
+          <Plus className="h-4 w-4" />
+          {showAddForm
+            ? "Cancel"
+            : "Add Bank Account"}
+        </button>
+      </div>
+
+      {showAddForm && (
+        <div className="bg-white rounded-3xl shadow border p-6">
+        <h3 className="text-lg font-semibold mb-5">
+            {editingBank
+                ? "Update Bank Account"
+                : "Add New Bank Account"}
+        </h3>
+          <form
+            onSubmit={handleAddBank}
+            className="space-y-4"
+          >
+            <input
+              type="text"
+              placeholder="Account Holder Name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  name: e.target.value,
+                })
+              }
+              className="w-full border rounded-xl px-4 py-3"
+              required
+            />
+
+            <input
+              type="text"
+              placeholder="Account Number"
+              value={formData.account_no}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  account_no:
+                    e.target.value,
+                })
+              }
+              className="w-full border rounded-xl px-4 py-3"
+              required
+            />
+
+            <input
+              type="text"
+              placeholder="IFSC Code"
+              value={formData.ifsc}
+              onChange={handleIFSCChange}
+              className="w-full border rounded-xl px-4 py-3"
+              required
+            />
+
+            <input
+              type="text"
+              value={formData.bank_name}
+              placeholder="Bank Name"
+              readOnly
+              className="w-full border rounded-xl px-4 py-3 bg-gray-50"
+            />
+
+            <input
+              type="text"
+              value={formData.branch_name}
+              placeholder="Branch Name"
+              readOnly
+              className="w-full border rounded-xl px-4 py-3 bg-gray-50"
+            />
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={
+                  formData.is_default
+                }
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    is_default:
+                      e.target.checked,
+                  })
+                }
+              />
+              Set as default account
+            </label>
+
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-orange-500 to-purple-600 text-white py-3 rounded-xl"
+            >
+              {editingBank
+                    ? "Update Bank Account"
+                    : "Save Bank Account"
+                }
+            </button>
+          </form>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="bg-white p-10 rounded-3xl text-center">
+          Loading...
+        </div>
+      ) : (
+        <div className="grid gap-5">
+          {banks.map((bank) => (
+            <div
+              key={bank._id}
+              className="bg-white rounded-3xl shadow border p-6"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <Building2 className="h-6 w-6 text-purple-600" />
+
+                    <h3 className="text-lg font-bold">
+                      {bank.bank_name}
+                    </h3>
+
+                    {bank.is_default && (
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
                         Default
                       </span>
                     )}
                   </div>
-                  <div>
-                    {!bank.isDefault && (
-                      <button
-                        onClick={() => setAsDefault(bank.id)}
-                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                      >
-                        Set as Default
-                      </button>
-                    )}
+
+                  <div className="mt-4 space-y-2">
+                    <p>
+                      Holder: {bank.name}
+                    </p>
+
+                    <p>
+                      Account No:{" "}
+                      {bank.account_no}
+                    </p>
+
+                    <p>
+                      IFSC: {bank.ifsc}
+                    </p>
+
+                    <p>
+                      Branch:{" "}
+                      {bank.branch_name}
+                    </p>
                   </div>
                 </div>
-              </li>
-            ))}
-          </ul>
+
+                <div className="flex flex-col items-end gap-3">
+                <CreditCard className="h-8 w-8 text-gray-400" />
+
+                <button
+                    onClick={() => {
+                    setEditingBank(bank);
+
+                    setFormData({
+                        name: bank.name,
+                        account_no: bank.account_no,
+                        ifsc: bank.ifsc,
+                        bank_name: bank.bank_name,
+                        branch_name: bank.branch_name,
+                        is_default: bank.is_default,
+                    });
+
+                    setShowAddForm(true);
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth",
+                    });
+                    }}
+
+                    
+                 className="px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl text-sm font-medium shadow hover:shadow-lg hover:scale-105 transition-all duration-200">
+                    Edit
+                </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }

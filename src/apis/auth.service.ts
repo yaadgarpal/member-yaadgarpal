@@ -27,5 +27,83 @@ export const AuthService = {
     },
     async profile() {
         return await apiRequest.get("auth/profile");
-    }
+    },
+    async getReferralHistory(page = 1, limit = 10) {
+        const response = await apiRequest.get(
+            `auth/wallet/history?page=${page}&limit=${limit}`
+        );
+
+        return {
+            ...response,
+            data: {
+            ...response.data,
+            history:
+                response.data.history?.filter(
+                (item: any) => item.type === "REFERRAL_REWARD"
+                ) || [],
+            },
+        };
+    },
+    async getOnlyWalletHistory(page = 1, limit = 10) {
+        const response = await apiRequest.get(
+            `auth/wallet/history?page=${page}&limit=${limit}`
+        );
+
+        return {
+            ...response,
+            data: {
+            ...response.data,
+            history:
+                response.data.history?.filter(
+                (item: any) => item.type === "WALLET_REWARD"
+                ) || [],
+            },
+        };
+    },
+    async getBankAccounts() {
+        return await apiRequest.get("auth/member-account");
+    },
+
+async addBankAccount(payload: {
+        name: string;
+        account_no: string;
+        ifsc: string;
+        bank_name: string;
+        branch_name: string;
+        is_default: boolean;
+        }) {
+        return await apiRequest.post(
+            "auth/member-account",
+            payload
+        );
+    }, 
+    async getBankByIFSC(ifsc: string) {
+        const response = await fetch(
+            `https://ifsc.razorpay.com/${ifsc}`
+        );
+
+        return await response.json();
+    },
+    async updateBankAccount(
+        id: string,
+        payload: {
+            name: string;
+            account_no: string;
+            ifsc: string;
+            bank_name: string;
+            branch_name: string;
+            is_default: boolean;
+        }
+        ) {
+        return await apiRequest.put(
+            `auth/member-account/${id}`,
+            payload
+        );
+        },
+
+        async deleteBankAccount(id: string) {
+        return await apiRequest.delete(
+            `auth/member-account/${id}`
+        );
+    },
 }

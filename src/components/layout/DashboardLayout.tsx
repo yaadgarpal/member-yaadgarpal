@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { User, Clock, Wallet, FileCheck, Building2, LogOut, Copy, Check, Menu, X } from "lucide-react";
+import { User, Clock, Wallet, FileCheck, Building2, LogOut, Copy, Check, Menu, X , Gift, LayoutDashboard} from "lucide-react";
 import toast from "react-hot-toast";
 import { AuthService } from "../../apis/auth.service";
+import { Logo } from "../../assets";
+
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
@@ -27,10 +29,11 @@ export default function DashboardLayout() {
  };
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: User },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Profile", href: "/dashboard/profile", icon: User },
     { name: "Booking History", href: "/dashboard/bookings", icon: Clock },
     { name: "Wallet History", href: "/dashboard/wallet", icon: Wallet },
+    { name: "Refer & Earn", href: "/dashboard/refer", icon: Gift },
     { name: "KYC", href: "/dashboard/kyc", icon: FileCheck },
     { name: "Bank Details", href: "/dashboard/banks", icon: Building2 },
   ];
@@ -77,7 +80,7 @@ export default function DashboardLayout() {
       >
         {/* Sidebar Header */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200">
-            <img src="/public/image.png" alt="YaadgarPal Logo" className="h-16 w-auto" />
+            <img src={Logo} alt="YaadgarPal Logo" className="h-16 w-auto" />
           <button
             onClick={() => setSidebarOpen(false)}
             className="md:hidden text-gray-400 hover:text-gray-600"
@@ -144,7 +147,7 @@ export default function DashboardLayout() {
             </div>
 
             {/* Right: Codes */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 ml-auto">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 ml-auto mb-1.5">
               {/* Referral Code Badge */}
               <div
                 onClick={() => handleCopy(referralCode, "Referral code")}

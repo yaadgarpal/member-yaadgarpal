@@ -106,4 +106,18 @@ async addBankAccount(payload: {
             `auth/member-account/${id}`
         );
     },
+    async createKyc(payload: {
+        adhaar_no: string;
+        pan_no: string;
+    }) {
+        return await apiRequest.post(
+            "auth/member-kyc",
+            payload
+        );
+    },
+    async getKycStatus() {
+        return await apiRequest.get(
+            "auth/member-kyc"
+        );
+    }
 }

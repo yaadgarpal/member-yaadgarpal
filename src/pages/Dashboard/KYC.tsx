@@ -7,14 +7,63 @@ import {
   Clock,
   XCircle,
 } from "lucide-react";
+import { AuthService } from "../../apis/auth.service";
+import toast from "react-hot-toast";
 
 export default function KYC() {
+
+  const [panNo, setPanNo] = useState("");
+  const [aadhaarNo, setAadhaarNo] = useState("");
+  const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("Pending");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus("Under Review");
-  };
+ const handleSubmit = async (
+  e: React.FormEvent
+) => {
+  e.preventDefault();
+
+  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  const aadhaarRegex = /^[0-9]{12}$/;
+
+  if (!panRegex.test(panNo)) {
+    toast.error(
+      "Please enter a valid PAN number (ABCDE1234F)"
+    );
+    return;
+  }
+
+  if (!aadhaarRegex.test(aadhaarNo)) {
+    toast.error(
+      "Please enter a valid 12-digit Aadhaar number"
+    );
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const response = await AuthService.createKyc({
+      pan_no: panNo,
+      adhaar_no: aadhaarNo,
+    });
+
+    if (response?.data?.success) {
+      toast.success(
+        "KYC submitted successfully. Your documents are under review."
+      );
+      setStatus("Under Review");
+    }
+  } catch (error: any) {
+    toast.error(
+      error?.response?.data?.message ||
+      "KYC submission failed"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+     
 
   const statusConfig = {
     Pending: {
@@ -107,6 +156,8 @@ export default function KYC() {
                   type="text"
                   required
                   placeholder="ABCDE1234F"
+                  value={panNo}
+                  onChange={(e) => setPanNo(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}    
                   className="w-full pl-11 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
@@ -125,46 +176,21 @@ export default function KYC() {
                   type="text"
                   required
                   placeholder="XXXX XXXX XXXX"
+                  value={aadhaarNo}
+                  onChange={(e) => setAadhaarNo(e.target.value.replace(/\D/g, ""))}
                   className="w-full pl-11 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
             </div>
 
-            {/* PAN Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload PAN Card
-              </label>
-
-              <div className="border-2 border-dashed border-gray-300 rounded-2xl p-5 hover:border-orange-400 transition">
-                <input
-                  type="file"
-                  required
-                  className="w-full"
-                />
-              </div>
-            </div>
-
-            {/* Aadhaar Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Aadhaar Card
-              </label>
-
-              <div className="border-2 border-dashed border-gray-300 rounded-2xl p-5 hover:border-orange-400 transition">
-                <input
-                  type="file"
-                  required
-                  className="w-full"
-                />
-              </div>
-            </div>
-
             <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-orange-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition"
-            >
-              Submit for Verification
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-orange-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50"
+                >
+                {loading
+                    ? "Submitting..."
+                    : "Submit for Verification"}
             </button>
           </form>
         </div>

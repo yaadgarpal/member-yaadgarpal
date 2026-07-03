@@ -28,10 +28,11 @@ export const AuthService = {
     async profile() {
         return await apiRequest.get("auth/profile");
     },
-    async getReferralHistory(page = 1, limit = 10) {
+    async getReferralHistory(page = 1, limit = 100) {
         const response = await apiRequest.get(
             `auth/wallet/history?page=${page}&limit=${limit}`
         );
+
 
         return {
             ...response,
@@ -55,7 +56,7 @@ export const AuthService = {
             ...response.data,
             history:
                 response.data.history?.filter(
-                (item: any) => item.type === "WALLET_REWARD"
+                (item: any) => item.type === "WALLET_CREDIT"
                 ) || [],
             },
         };
@@ -119,5 +120,8 @@ async addBankAccount(payload: {
         return await apiRequest.get(
             "auth/member-kyc"
         );
+    },
+    async changePassword(data: any) {
+        return apiRequest.post("/auth/change-password", data);
     }
 }

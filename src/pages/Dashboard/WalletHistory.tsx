@@ -11,10 +11,11 @@ export default function WalletHistory() {
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
-  useEffect(() => {
+    useEffect(() => {
+    console.log("useEffect called");
     fetchProfile();
     fetchWalletHistory();
-  }, []);
+    }, []);
 
   const fetchProfile = async () => {
     try {
@@ -31,6 +32,7 @@ export default function WalletHistory() {
   const fetchWalletHistory = async () => {
     try {
       const response = await AuthService.getOnlyWalletHistory();
+    
 
       setHistory(
         response?.data?.history || []
@@ -48,9 +50,20 @@ export default function WalletHistory() {
 
     const amount = Number(withdrawAmount);
 
+    if (!withdrawAmount.trim()) {
+        toast.error("Please enter withdrawal amount");
+        return;
+    }
+
+
     if (!amount || amount <= 0) {
       toast.error("Please enter a valid amount");
       return;
+    }
+
+    if (amount < 100) {
+        toast.error("Minimum withdrawal amount is ₹100");
+        return;
     }
 
     if (amount > walletBalance) {
@@ -59,7 +72,7 @@ export default function WalletHistory() {
     }
 
     toast.success(
-      `Withdrawal request for ₹${amount} submitted`
+      `Withdrawal request for ₹${Number(amount).toFixed(2)} submitted`
     );
 
     setWithdrawAmount("");
@@ -79,7 +92,7 @@ export default function WalletHistory() {
             </p>
 
             <h2 className="text-4xl font-bold mt-1">
-              ₹{walletBalance}
+              ₹{Number(walletBalance).toFixed(2)}
             </h2>
           </div>
         </div>
@@ -185,20 +198,27 @@ export default function WalletHistory() {
                 </div>
 
                 <div className="text-right">
-                  <div className="text-green-600 font-bold text-lg">
-                    +{txn.points} Points
-                </div>
+                    {txn.type === "WALLET_CREDIT" ? (
+                        <div className="text-green-600 font-bold text-lg flex items-center justify-end gap-1">
+                        <IndianRupee className="h-4 w-4" />
+                        {Number(txn.walletAmount).toFixed(2)}
+                        </div>
+                    ) : (
+                        <div className="text-blue-600 font-bold text-lg">
+                        +{Number(txn.points).toFixed(2)} Points
+                        </div>
+                    )}
 
-                  <span
-                    className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${
-                      txn.status === "SUCCESS"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {txn.status}
-                  </span>
-                </div>
+                    <span
+                        className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${
+                        txn.status === "SUCCESS"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                    >
+                        {txn.status}
+                    </span>
+                    </div>
               </div>
             ))}
           </div>

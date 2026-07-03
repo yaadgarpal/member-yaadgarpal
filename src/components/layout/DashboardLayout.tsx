@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { User, Clock, Wallet, FileCheck, Building2, LogOut, Copy, Check, Menu, X , Gift, LayoutDashboard} from "lucide-react";
+import {
+  User,
+  Clock,
+  Wallet,
+  FileCheck,
+  Building2,
+  LogOut,
+  X,
+  Gift,
+  LayoutDashboard,
+  MoreHorizontal,
+  ChevronUp,
+  Lock,
+  Bell,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { AuthService } from "../../apis/auth.service";
 import { Logo } from "../../assets";
@@ -9,7 +23,7 @@ import { Logo } from "../../assets";
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
@@ -31,9 +45,10 @@ export default function DashboardLayout() {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Profile", href: "/dashboard/profile", icon: User },
-    { name: "Booking History", href: "/dashboard/bookings", icon: Clock },
     { name: "Wallet History", href: "/dashboard/wallet", icon: Wallet },
     { name: "Refer & Earn", href: "/dashboard/refer", icon: Gift },
+    { name: "Change Password", href: "/dashboard/change-password", icon: Lock,
+},
     { name: "KYC", href: "/dashboard/kyc", icon: FileCheck },
     { name: "Bank Details", href: "/dashboard/banks", icon: Building2 },
   ];
@@ -62,33 +77,16 @@ export default function DashboardLayout() {
     <div className="flex h-screen bg-gray-100">
 
       {/* ─── Mobile Sidebar Overlay ─── */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
 
       {/* ─── Sidebar ─── */}
       <div
         className={`
-          fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg flex flex-col
-          transform transition-transform duration-300 ease-in-out
-          md:relative md:translate-x-0
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            hidden md:flex md:flex-col
+            md:w-64
+            bg-white
+            shadow-lg
         `}
-      >
-        {/* Sidebar Header */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200">
-            <img src={Logo} alt="YaadgarPal Logo" className="h-16 w-auto" />
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="md:hidden text-gray-400 hover:text-gray-600"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
+        >
         {/* Nav Links */}
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="px-4 space-y-1">
@@ -99,7 +97,7 @@ export default function DashboardLayout() {
                   key={item.name}
                   to={item.href}
                   end={item.href === "/dashboard"}
-                  onClick={() => setSidebarOpen(false)}
+                //   onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) =>
                     `flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                       isActive
@@ -132,62 +130,151 @@ export default function DashboardLayout() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
         <header className="bg-white shadow-sm z-10">
-          <div className="px-4 py-3 flex items-center justify-between gap-3">
+          <div className="px-4 py-3 flex items-center justify-between">
 
-            {/* Left: Hamburger + Brand (mobile) */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="md:hidden text-gray-600 hover:text-[#7e22ce] transition-colors"
-                aria-label="Open sidebar"
-              >
-                <Menu className="h-6 w-6" />
-              </button>
-              <span className="text-xl font-bold text-[#7e22ce] md:hidden">YaadgarPal</span>
+            {/* Logo */}
+            <img
+                src={Logo}
+                alt="Logo"
+                className="h-18 w-auto"
+            />
+
+            {/* Right Side */}
+            <div className="flex items-center gap-4">
+
+                <button className="relative">
+                <Bell className="h-6 w-6 text-gray-700" />
+
+                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500"></span>
+                </button>
+
+                <NavLink to="/dashboard/profile">
+                <div className="h-9 w-9 rounded-full bg-[#7e22ce] flex items-center justify-center text-white">
+                    <User className="h-5 w-5" />
+                </div>
+                </NavLink>
+
             </div>
 
-            {/* Right: Codes */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 ml-auto mb-1.5">
-              {/* Referral Code Badge */}
-              <div
-                onClick={() => handleCopy(referralCode, "Referral code")}
-                className="flex items-center bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 px-2.5 py-1.5 rounded-full cursor-pointer transition-all active:scale-95"
-                title="Click to copy Referral Code"
-              >
-                <span className="text-[10px] sm:text-xs font-semibold mr-1.5 uppercase tracking-wide">Ref:</span>
-                <span className="text-xs sm:text-sm font-mono font-bold mr-1.5">{referralCode}</span>
-                {copiedCode === referralCode ? (
-                  <Check className="h-3.5 w-3.5 text-green-500" />
-                ) : (
-                  <Copy className="h-3.5 w-3.5 opacity-70" />
-                )}
-              </div>
-
-              {/* Booking Code Badge */}
-              <div
-                onClick={() => handleCopy(bookingCode, "Booking code")}
-                className="flex items-center bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 px-2.5 py-1.5 rounded-full cursor-pointer transition-all active:scale-95"
-                title="Click to copy Booking Code"
-              >
-                <span className="text-[10px] sm:text-xs font-semibold mr-1.5 uppercase tracking-wide">Booking:</span>
-                <span className="text-xs sm:text-sm font-mono font-bold mr-1.5">{bookingCode}</span>
-                {copiedCode === bookingCode ? (
-                  <Check className="h-3.5 w-3.5 text-green-500" />
-                ) : (
-                  <Copy className="h-3.5 w-3.5 opacity-70" />
-                )}
-              </div>
             </div>
-          </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 pb-20 md:pb-0">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8">
             <Outlet />
           </div>
         </main>
+        {/* Mobile Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden z-50">
+
+        {/* More Menu */}
+        {moreOpen && (
+            <div className="absolute bottom-16 right-3 w-52 bg-white rounded-xl shadow-xl border">
+
+            <NavLink
+                to="/dashboard/refer"
+                onClick={() => setMoreOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+            >
+                <Gift className="w-5 h-5" />
+                Refer & Earn
+            </NavLink>
+            <NavLink
+            to = "/dashboard/change-password"
+            onClick={() => setMoreOpen(false)}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+            >
+                <Lock className="w-5 h-5" />
+                Change Password
+            </NavLink>
+
+            <NavLink
+                to="/dashboard/kyc"
+                onClick={() => setMoreOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+            >
+                <FileCheck className="w-5 h-5" />
+                KYC
+            </NavLink>
+
+            <NavLink
+                to="/dashboard/banks"
+                onClick={() => setMoreOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+            >
+                <Building2 className="w-5 h-5" />
+                Bank Details
+            </NavLink>
+
+
+            <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50"
+            >
+                <LogOut className="w-5 h-5" />
+                Logout
+            </button>
+
+            </div>
+        )}
+
+        <div className="grid grid-cols-4 h-16">
+
+            <NavLink
+            to="/dashboard"
+            end
+            className={({ isActive }) =>
+                `flex flex-col items-center justify-center ${
+                isActive ? "text-[#7e22ce]" : "text-gray-500"
+                }`
+            }
+            >
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="text-[10px]">Home</span>
+            </NavLink>
+
+            <NavLink
+            to="/dashboard/profile"
+            className={({ isActive }) =>
+                `flex flex-col items-center justify-center ${
+                isActive ? "text-[#7e22ce]" : "text-gray-500"
+                }`
+            }
+            >
+            <User className="w-5 h-5" />
+            <span className="text-[10px]">Profile</span>
+            </NavLink>
+
+
+            <NavLink
+            to="/dashboard/wallet"
+            className={({ isActive }) =>
+                `flex flex-col items-center justify-center ${
+                isActive ? "text-[#7e22ce]" : "text-gray-500"
+                }`
+            }
+            >
+            <Wallet className="w-5 h-5" />
+            <span className="text-[10px]">Wallet</span>
+            </NavLink>
+
+            <button
+            onClick={() => setMoreOpen(!moreOpen)}
+            className="flex flex-col items-center justify-center text-gray-500"
+            >
+            {moreOpen ? (
+                <ChevronUp className="w-5 h-5" />
+            ) : (
+                <MoreHorizontal className="w-5 h-5" />
+            )}
+            <span className="text-[10px]">More</span>
+            </button>
+
+        </div>
+        </div>
       </div>
     </div>
+    
   );
 }

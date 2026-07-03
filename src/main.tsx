@@ -14,13 +14,14 @@ import Login from './pages/Auth/Login'
 import ForgotPassword from './pages/Auth/ForgetPassword'
 import ResetPassword from './pages/Auth/ResetPassword'
 
+
 import DashboardHome from './pages/Dashboard/DashboardHome'
 import Profile from './pages/Dashboard/Profile'
-import BookingHistory from './pages/Dashboard/BookingHistory'
 import WalletHistory from './pages/Dashboard/WalletHistory'
 import KYC from './pages/Dashboard/KYC'
 import BankDetails from './pages/Dashboard/BankDetails'
 import ReferralHistory from './pages/Dashboard/ReferralHistory'
+import ChangePassword from './pages/Dashboard/ChangePassword'
 
 import { Toaster } from 'react-hot-toast'
 import { Provider } from 'react-redux'
@@ -49,7 +50,8 @@ const router = createBrowserRouter([
       {
         path: "reset-password/:token",
         element: <ResetPassword />
-      }
+      },
+      
     ]
   },
   {
@@ -69,13 +71,14 @@ const router = createBrowserRouter([
             element: <Profile />
         },
         {
-            path: "bookings",
-            element: <BookingHistory />
-        },
-        {
             path: "wallet",
             element: <WalletHistory />
         },
+        {
+        path: "change-password",
+        element:<ChangePassword/>
+      },
+        
         {
             path: "kyc",
             element: <KYC />

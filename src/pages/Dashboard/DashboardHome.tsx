@@ -4,7 +4,6 @@ import { AuthService } from "../../apis/auth.service";
 import toast from "react-hot-toast";
 
 export default function DashboardHome() {
-  const [copied, setCopied] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,17 +26,20 @@ export default function DashboardHome() {
     }
   };
 
-  const handleCopy = () => {
-    if (!profile?.referral_code) return;
+  const [copiedType, setCopiedType] = useState<"referral" | "booking" | null>(null);
 
-    navigator.clipboard.writeText(profile.referral_code);
-    setCopied(true);
+    const handleCopy = (code: string, type: "referral" | "booking") => {
+    if (!code) return;
 
-    toast.success("Referral code copied!");
+    navigator.clipboard.writeText(code);
+    setCopiedType(type);
 
-    setTimeout(() => setCopied(false), 2000);
-  };
+    toast.success(
+        `${type === "referral" ? "Referral" : "Booking"} code copied!`
+    );
 
+    setTimeout(() => setCopiedType(null), 2000);
+    };
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
@@ -59,33 +61,74 @@ export default function DashboardHome() {
         </p>
       </div>
 
-      {/* Referral Card */}
-      <div className="bg-white shadow rounded-lg p-6 flex flex-col sm:flex-row items-center justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-gray-900">
-            Your Referral Code
-          </h2>
+      {/* Referral & Booking Code */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          <p className="text-sm text-gray-500">
-            Share this code to earn rewards.
-          </p>
-        </div>
+        {/* Referral Code */}
+        <div className="bg-white shadow rounded-xl p-6 flex items-center justify-between">
 
-        <div className="mt-4 sm:mt-0 flex items-center bg-gray-50 px-4 py-2 rounded-md border">
-          <span className="text-xl font-mono font-bold text-indigo-600 mr-4">
-            {profile?.referral_code || "N/A"}
-          </span>
+            <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+                Referral Code
+            </h2>
 
-          <button onClick={handleCopy}>
-            {copied ? (
-              <Check className="h-5 w-5 text-green-500" />
+            <p className="text-sm text-gray-500">
+                Share this code to earn rewards.
+            </p>
+
+            <p className="mt-3 text-2xl font-mono font-bold text-purple-600">
+                {profile?.referral_code || "N/A"}
+            </p>
+            </div>
+
+            <button
+            onClick={() =>
+                handleCopy(profile?.referral_code, "referral")
+            }
+            className="bg-purple-100 p-3 rounded-full hover:bg-purple-200 transition"
+            >
+            {copiedType === "referral" ? (
+                <Check className="h-5 w-5 text-green-500" />
             ) : (
-              <Copy className="h-5 w-5 text-gray-500" />
+                <Copy className="h-5 w-5 text-purple-600" />
             )}
-          </button>
-        </div>
-      </div>
+            </button>
 
+        </div>
+
+        {/* Booking Code */}
+        <div className="bg-white shadow rounded-xl p-6 flex items-center justify-between">
+
+            <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+                Booking Code
+            </h2>
+
+            <p className="text-sm text-gray-500">
+                Share this booking code.
+            </p>
+
+            <p className="mt-3 text-2xl font-mono font-bold text-orange-500">
+                {profile?.booking_code || "N/A"}
+            </p>
+            </div>
+
+            <button
+            onClick={() =>
+                handleCopy(profile?.booking_code, "booking")
+            }
+            className="bg-orange-100 p-3 rounded-full hover:bg-orange-200 transition"
+            >
+            {copiedType === "booking" ? (
+                <Check className="h-5 w-5 text-green-500" />
+            ) : (
+                <Copy className="h-5 w-5 text-orange-600" />
+            )}
+            </button>
+
+        </div>
+
+        </div>
       {/* Stats */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="bg-white shadow rounded-lg p-6">
@@ -97,7 +140,7 @@ export default function DashboardHome() {
           </div>
 
           <p className="mt-3 text-3xl font-bold">
-            ₹{profile?.wallet_amount || 0}
+            ₹{Number(profile?.wallet_amount ?? 0).toFixed(2)}
           </p>
         </div>
 

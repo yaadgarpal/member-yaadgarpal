@@ -90,7 +90,7 @@ export default function Profile() {
                 </p>
 
                 <h3 className="text-xl font-bold text-orange-600 mt-2">
-                {profile?.wallet_amount || 0} Points
+                ₹{Number(profile?.wallet_amount ?? 0).toFixed(2)}
                 </h3>
             </div>
 

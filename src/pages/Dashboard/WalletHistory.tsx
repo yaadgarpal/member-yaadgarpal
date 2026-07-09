@@ -20,9 +20,7 @@ export default function WalletHistory() {
     try {
       const response = await AuthService.profile();
 
-      setWalletBalance(
-        response?.data?.wallet_amount || 0
-      );
+      setWalletBalance(response?.data?.wallet_amount || 0);
     } catch (error) {
       console.error(error);
     }
@@ -32,9 +30,7 @@ export default function WalletHistory() {
     try {
       const response = await AuthService.getOnlyWalletHistory();
 
-      setHistory(
-        response?.data?.history || []
-      );
+      setHistory(response?.data?.history || []);
     } catch (error) {
       console.error(error);
       toast.error("Failed to load wallet history");
@@ -58,9 +54,7 @@ export default function WalletHistory() {
       return;
     }
 
-    toast.success(
-      `Withdrawal request for ₹${amount} submitted`
-    );
+    toast.success(`Withdrawal request for ₹${amount} submitted`);
 
     setWithdrawAmount("");
     setShowWithdraw(false);
@@ -74,12 +68,10 @@ export default function WalletHistory() {
           <Wallet className="h-8 w-8" />
 
           <div>
-            <p className="text-orange-100">
-              Available Balance
-            </p>
+            <p className="text-orange-100">Available Balance</p>
 
             <h2 className="text-4xl font-bold mt-1">
-              ₹{walletBalance}
+              ₹{parseInt(walletBalance)}
             </h2>
           </div>
         </div>
@@ -89,9 +81,7 @@ export default function WalletHistory() {
       <div className="bg-white rounded-2xl shadow border">
         <div className="p-5 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold">
-              Withdraw Amount
-            </h3>
+            <h3 className="text-lg font-semibold">Withdraw Amount</h3>
 
             <p className="text-sm text-gray-500">
               Transfer your earnings to bank account
@@ -99,9 +89,7 @@ export default function WalletHistory() {
           </div>
 
           <button
-            onClick={() =>
-              setShowWithdraw(!showWithdraw)
-            }
+            onClick={() => setShowWithdraw(!showWithdraw)}
             className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm"
           >
             Withdraw
@@ -118,9 +106,7 @@ export default function WalletHistory() {
                 type="number"
                 placeholder="Enter amount"
                 value={withdrawAmount}
-                onChange={(e) =>
-                  setWithdrawAmount(e.target.value)
-                }
+                onChange={(e) => setWithdrawAmount(e.target.value)}
                 className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
 
@@ -142,15 +128,11 @@ export default function WalletHistory() {
       {/* Transaction History */}
       <div className="bg-white rounded-2xl shadow border overflow-hidden">
         <div className="p-5 border-b">
-          <h3 className="text-lg font-semibold">
-            Wallet History
-          </h3>
+          <h3 className="text-lg font-semibold">Wallet History</h3>
         </div>
 
         {loading ? (
-          <div className="p-10 text-center">
-            Loading...
-          </div>
+          <div className="p-10 text-center">Loading...</div>
         ) : history.length === 0 ? (
           <div className="p-10 text-center text-gray-500">
             No transactions found
@@ -177,17 +159,15 @@ export default function WalletHistory() {
                     </p>
 
                     <p className="text-xs text-gray-400 mt-2">
-                      {new Date(
-                        txn.createdAt
-                      ).toLocaleString()}
+                      {new Date(txn.createdAt).toLocaleString()}
                     </p>
                   </div>
                 </div>
 
                 <div className="text-right">
                   <div className="text-green-600 font-bold text-lg">
-                    +{txn.points} Points
-                </div>
+                    +₹{parseInt(txn.walletAmount)} Amount
+                  </div>
 
                   <span
                     className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${

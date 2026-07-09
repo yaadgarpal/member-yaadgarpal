@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { User, Clock, Wallet, FileCheck, Building2, LogOut, Copy, Check, Menu, X , Gift, LayoutDashboard} from "lucide-react";
+import { User, Clock, Wallet, FileCheck, Building2, LogOut, Copy, Check, Menu, X , Gift, LayoutDashboard, TrendingUp, Bell, Trophy, BarChart2, ShoppingBag} from "lucide-react";
+
+
 import toast from "react-hot-toast";
 import { AuthService } from "../../apis/auth.service";
 import { Logo } from "../../assets";
@@ -31,12 +33,18 @@ export default function DashboardLayout() {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Profile", href: "/dashboard/profile", icon: User },
-    { name: "Booking History", href: "/dashboard/bookings", icon: Clock },
+   // { name: "Booking History", href: "/dashboard/bookings", icon: Clock },
     { name: "Wallet History", href: "/dashboard/wallet", icon: Wallet },
     { name: "Refer & Earn", href: "/dashboard/refer", icon: Gift },
+    { name: "Booking Progress", href: "/dashboard/progress", icon: TrendingUp },
+    { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy },
+    { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
+    { name: "Earnings Graph", href: "/dashboard/earnings", icon: BarChart2 },
+    { name: "Redeem Store", href: "/dashboard/store", icon: ShoppingBag },
     { name: "KYC", href: "/dashboard/kyc", icon: FileCheck },
     { name: "Bank Details", href: "/dashboard/banks", icon: Building2 },
   ];
+
 
     const referralCode = profile?.referral_code || "N/A";
     const bookingCode = profile?.booking_code || "N/A";
@@ -146,7 +154,7 @@ export default function DashboardLayout() {
               <span className="text-xl font-bold text-[#7e22ce] md:hidden">YaadgarPal</span>
             </div>
 
-            {/* Right: Codes */}
+            {/* Right: Codes + Bell */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 ml-auto mb-1.5">
               {/* Referral Code Badge */}
               <div
@@ -177,6 +185,18 @@ export default function DashboardLayout() {
                   <Copy className="h-3.5 w-3.5 opacity-70" />
                 )}
               </div>
+
+              {/* Bell icon */}
+              <NavLink
+                to="/dashboard/notifications"
+                className="relative text-gray-500 hover:text-[#7e22ce] transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell className="h-6 w-6" />
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center">
+                  3
+                </span>
+              </NavLink>
             </div>
           </div>
         </header>

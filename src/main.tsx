@@ -21,6 +21,11 @@ import WalletHistory from './pages/Dashboard/WalletHistory'
 import KYC from './pages/Dashboard/KYC'
 import BankDetails from './pages/Dashboard/BankDetails'
 import ReferralHistory from './pages/Dashboard/ReferralHistory'
+import BookingProgress from './pages/Dashboard/BookingProgress'
+import Notifications from './pages/Dashboard/Notifications'
+import Leaderboard from './pages/Dashboard/Leaderboard'
+import EarningsGraph from './pages/Dashboard/EarningsGraph'
+import RedeemStore from './pages/Dashboard/RedeemStore'
 
 import { Toaster } from 'react-hot-toast'
 import { Provider } from 'react-redux'
@@ -87,6 +92,26 @@ const router = createBrowserRouter([
         {
             path: "refer",
             element: <ReferralHistory />
+        },
+        {
+            path: "progress",
+            element: <BookingProgress />
+        },
+        {
+            path: "notifications",
+            element: <Notifications />
+        },
+        {
+            path: "leaderboard",
+            element: <Leaderboard />
+        },
+        {
+            path: "earnings",
+            element: <EarningsGraph />
+        },
+        {
+            path: "store",
+            element: <RedeemStore />
         }
     ]
     }

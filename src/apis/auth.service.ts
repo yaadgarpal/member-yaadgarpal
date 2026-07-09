@@ -35,12 +35,13 @@ export const AuthService = {
       ...response,
       data: {
         ...response.data,
-        // history:
-        //   response.data.history?.filter(
-        //     (item: any) => item.type === "WALLET_REWARD",
-        //   ) || [],
       },
     };
+  },
+  async getAllWalletHistory(page = 1, limit = 100) {
+    return await apiRequest.get(
+      `auth/wallet/history?page=${page}&limit=${limit}`,
+    );
   },
   async getBankAccounts() {
     return await apiRequest.get("auth/member-account");

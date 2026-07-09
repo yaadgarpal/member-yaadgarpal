@@ -86,22 +86,45 @@ function getCurrentMilestone(count: number) {
 
 export default function BookingProgress() {
   const [bookingCount, setBookingCount] = useState<number>(0);
+  const [totalEarned, setTotalEarned] = useState<number>(0);
+  const [totalTransferred, setTotalTransferred] = useState<number>(0);
+  const [netPoints, setNetPoints] = useState<number>(0);
+  const [lastActivity, setLastActivity] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBookingData();
+    fetchData();
   }, []);
 
-  const fetchBookingData = async () => {
+  const fetchData = async () => {
     try {
-      // Fetch profile for real data if available
-      const response = await AuthService.profile();
-      // Use total_bookings field if backend provides it, else default mock
-      const count = response?.data?.total_bookings ?? 4; // mock: 4
-      setBookingCount(count);
+      const response = await AuthService.getAllWalletHistory(1, 100);
+      const history: any[] = response?.data?.history || [];
+
+      // Count CREDIT entries as "booking/referral events"
+      const credits = history.filter((h) => h.transfer_type === "CREDIT");
+      const debits  = history.filter((h) => h.transfer_type === "DEBIT");
+
+      const earned = credits.reduce((s, h) => s + (parseInt(h.points) || 0), 0);
+      const transferred = debits.reduce(
+        (s, h) => s + (parseInt(h.balancePoints) || parseInt(h.points) || 0), 0
+      );
+
+      setBookingCount(credits.length);          // each credit = 1 event
+      setTotalEarned(earned);
+      setTotalTransferred(transferred);
+      setNetPoints(Math.max(0, earned - transferred));
+
+      // Last activity
+      if (history.length > 0) {
+        const sorted = [...history].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setLastActivity(new Date(sorted[0].createdAt).toLocaleDateString("en-IN"));
+      }
     } catch (err) {
       console.error(err);
-      setBookingCount(4); // fallback mock
+      setBookingCount(0);
     } finally {
       setLoading(false);
     }
@@ -141,43 +164,75 @@ export default function BookingProgress() {
       </div>
 
       {/* ── Stats Row ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Total Bookings */}
-        <div className="bg-white rounded-2xl border shadow p-5 flex items-center gap-4">
-          <div className="bg-indigo-100 text-indigo-600 rounded-xl p-3">
-            <Calendar className="h-6 w-6" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {/* Total Events */}
+        <div className="bg-white rounded-2xl border shadow p-5 flex items-center gap-3">
+          <div className="bg-indigo-100 text-indigo-600 rounded-xl p-2.5">
+            <Calendar className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">Total Bookings</p>
-            <p className="text-3xl font-extrabold text-gray-900 leading-tight">{bookingCount}</p>
+            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">Events</p>
+            <p className="text-2xl font-extrabold text-gray-900 leading-tight">{bookingCount}</p>
           </div>
         </div>
 
         {/* Current Badge */}
-        <div className="bg-white rounded-2xl border shadow p-5 flex items-center gap-4">
-          <div className="bg-purple-100 text-purple-600 rounded-xl p-3">
-            <Star className="h-6 w-6" />
+        <div className="bg-white rounded-2xl border shadow p-5 flex items-center gap-3">
+          <div className="bg-purple-100 text-purple-600 rounded-xl p-2.5">
+            <Star className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">Current Badge</p>
-            <p className="text-lg font-bold text-gray-900 leading-tight">
-              {currentMilestone ? `${currentMilestone.icon} ${currentMilestone.label}` : "Getting started…"}
+            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">Badge</p>
+            <p className="text-sm font-bold text-gray-900 leading-tight">
+              {currentMilestone ? `${currentMilestone.icon} ${currentMilestone.label}` : "—"}
             </p>
           </div>
         </div>
 
-        {/* Next Reward */}
-        <div className="bg-white rounded-2xl border shadow p-5 flex items-center gap-4">
-          <div className="bg-yellow-100 text-yellow-600 rounded-xl p-3">
-            <Gift className="h-6 w-6" />
+        {/* Total Earned */}
+        <div className="bg-white rounded-2xl border shadow p-5 flex items-center gap-3">
+          <div className="bg-green-100 text-green-600 rounded-xl p-2.5">
+            <Gift className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">Next Reward</p>
-            <p className="text-sm font-semibold text-gray-800 leading-tight">{nextMilestone.reward}</p>
-            <p className="text-xs text-gray-400 mt-0.5">at {nextMilestone.count} bookings</p>
+            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">Earned</p>
+            <p className="text-2xl font-extrabold text-green-600 leading-tight">{totalEarned}</p>
+            <p className="text-[10px] text-gray-400">pts</p>
+          </div>
+        </div>
+
+        {/* Transferred */}
+        <div className="bg-white rounded-2xl border shadow p-5 flex items-center gap-3">
+          <div className="bg-red-100 text-red-500 rounded-xl p-2.5">
+            <TrendingUp className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">Used</p>
+            <p className="text-2xl font-extrabold text-red-500 leading-tight">{totalTransferred}</p>
+            <p className="text-[10px] text-gray-400">pts</p>
+          </div>
+        </div>
+
+        {/* Net Available */}
+        <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-100 rounded-2xl p-5 flex items-center gap-3">
+          <div className="bg-purple-600 text-white rounded-xl p-2.5">
+            <Trophy className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">Available</p>
+            <p className="text-2xl font-extrabold text-purple-700 leading-tight">{netPoints}</p>
+            <p className="text-[10px] text-gray-400">pts</p>
           </div>
         </div>
       </div>
+
+      {/* Last Activity */}
+      {lastActivity && (
+        <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-2.5 text-sm text-indigo-700 font-medium flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          Last activity: <span className="font-bold">{lastActivity}</span>
+        </div>
+      )}
 
       {/* ── Progress Bar ─────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border shadow p-6">

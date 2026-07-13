@@ -117,9 +117,7 @@ export default function ReferralHistory() {
       // Refresh history to reflect updated points
       fetchReferrals();
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || "Failed to transfer points",
-      );
+      toast.error(error?.message || "Failed to transfer points");
     } finally {
       setTransferLoading(false);
     }
